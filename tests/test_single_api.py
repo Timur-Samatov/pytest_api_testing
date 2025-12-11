@@ -52,5 +52,22 @@ def test_single_entity_not_found():
     # Verify response structure and content
     error_response = response.json()  
     assert isinstance(error_response, dict), "response should be a JSON object"
-    print(error_response["errorMessages"])
     assert f"{error_response["errorMessages"]}" == f"['Could not find Entity with ID {entity_id}']" , "error message should indicate entity not found"
+
+def test_create_entity():
+    new_entity = {
+        "name": "bob"
+    }
+    response = requests.post(base_url, json=new_entity)
+
+    # Verify status code
+    assert response.status_code == 201 
+
+    # Verify content-type
+    assert response.headers["Content-Type"] == "application/json"
+
+    # Verify response structure and content
+    created_entity = response.json()  
+    assert isinstance(created_entity, dict), "response should be a JSON object"
+    assert "id" in created_entity, "created entity should have an 'id' field"
+    assert created_entity["name"] == new_entity["name"], "created entity 'name' should match"
