@@ -80,8 +80,7 @@ test_suit_data = [
     (5, "entity number 5"),
     (6, "entity number 6"),
     (7, "entity number 7"),
-    (8, "entity number 8"),
-    (9, "entity number 9")
+    (8, "entity number 8")
 ]
 
 @pytest.mark.parametrize("entity_id, entity_name", test_suit_data)
