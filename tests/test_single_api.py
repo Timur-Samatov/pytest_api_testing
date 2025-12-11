@@ -71,3 +71,23 @@ def test_create_entity():
     assert isinstance(created_entity, dict), "response should be a JSON object"
     assert "id" in created_entity, "created entity should have an 'id' field"
     assert created_entity["name"] == new_entity["name"], "created entity 'name' should match"
+
+test_suit_data = [
+    (1, "entity number 1"),
+    (2, "entity number 2"),
+    (3, "entity number 3"),
+    (4, "entity number 4"),
+    (5, "entity number 5"),
+    (6, "entity number 6"),
+    (7, "entity number 7"),
+    (8, "entity number 8"),
+    (9, "entity number 9")
+]
+
+@pytest.mark.parametrize("entity_id, entity_name", test_suit_data)
+def test_get_book_various_ids(entity_id, entity_name):
+    url = f"{base_url}/{entity_id}"
+    response = requests.get(url)
+    entity = response.json() 
+    assert entity["id"] == entity_id, f"entity 'id' should be {entity_id}"
+    assert entity["name"] == entity_name, f"entity 'name' should be {entity_name}"
