@@ -2,10 +2,7 @@ pipeline {
     agent any
     
     environment {
-        POETRY_VERSION = '1.8.0'
-        POETRY_HOME = '/var/jenkins_home/.poetry'
-        POETRY_BIN = '/var/jenkins_home/.poetry/bin'
-        PATH = "${env.POETRY_BIN}:${env.PATH}"
+        PATH = "$HOME/.local/bin:${env.PATH}"
     }
     
     stages {
@@ -18,16 +15,21 @@ pipeline {
         stage('Setup Poetry') {
             steps {
                 script {
-                    // Install Poetry if not already installed
-                    sh '''
-                        if ! command -v poetry &> /dev/null; then
-                            echo "Installing Poetry..."
-                            curl -sSL https://install.python-poetry.org | python3 -
-                        else
-                            echo "Poetry already installed"
+                    // Check if Poetry is already available system-wide
+                    def poetryExists = sh(script: 'command -v poetry', returnStatus: true) == 0
+                    
+                    if (poetryExists) {
+                        echo "Poetry found in system PATH"
+                        sh 'poetry --version'
+                    } else {
+                        echo "Installing Poetry using pip..."
+                        sh '''
+                            # Install Poetry using pip to avoid symlink issues
+                            python3 -m pip install --user poetry
+                            export PATH="$HOME/.local/bin:$PATH"
                             poetry --version
-                        fi
-                    '''
+                        '''
+                    }
                 }
             }
         }
@@ -36,6 +38,7 @@ pipeline {
             steps {
                 sh '''
                     echo "Installing dependencies..."
+                    export PATH="$HOME/.local/bin:$PATH"
                     poetry install --with dev --no-root
                 '''
             }
@@ -45,6 +48,7 @@ pipeline {
             steps {
                 sh '''
                     echo "Running tests with pytest..."
+                    export PATH="$HOME/.local/bin:$PATH"
                     poetry run pytest tests/ -v --tb=short
                 '''
             }
