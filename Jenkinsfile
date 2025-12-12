@@ -2,9 +2,7 @@ pipeline {
     agent any
     
     environment {
-        POETRY_HOME = "${env.WORKSPACE}/.poetry"
-        POETRY_BIN = "${env.WORKSPACE}/.poetry/bin"
-        PATH = "${env.POETRY_BIN}:${env.PATH}"
+        PATH = "$HOME/.local/bin:${env.PATH}"
     }
     
     stages {
@@ -24,11 +22,11 @@ pipeline {
                         echo "Poetry found in system PATH"
                         sh 'poetry --version'
                     } else {
-                        echo "Installing Poetry to workspace..."
+                        echo "Installing Poetry using pip..."
                         sh '''
-                            export POETRY_HOME="${WORKSPACE}/.poetry"
-                            curl -sSL https://install.python-poetry.org | python3 -
-                            export PATH="${WORKSPACE}/.poetry/bin:$PATH"
+                            # Install Poetry using pip to avoid symlink issues
+                            python3 -m pip install --user poetry
+                            export PATH="$HOME/.local/bin:$PATH"
                             poetry --version
                         '''
                     }
@@ -40,7 +38,7 @@ pipeline {
             steps {
                 sh '''
                     echo "Installing dependencies..."
-                    export PATH="${WORKSPACE}/.poetry/bin:$PATH"
+                    export PATH="$HOME/.local/bin:$PATH"
                     poetry install --with dev --no-root
                 '''
             }
@@ -50,7 +48,7 @@ pipeline {
             steps {
                 sh '''
                     echo "Running tests with pytest..."
-                    export PATH="${WORKSPACE}/.poetry/bin:$PATH"
+                    export PATH="$HOME/.local/bin:$PATH"
                     poetry run pytest tests/ -v --tb=short
                 '''
             }
