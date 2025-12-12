@@ -2,9 +2,8 @@ pipeline {
     agent any
     
     environment {
-        POETRY_VERSION = '1.8.0'
-        POETRY_HOME = '/var/jenkins_home/.poetry'
-        POETRY_BIN = '/var/jenkins_home/.poetry/bin'
+        POETRY_HOME = "${env.WORKSPACE}/.poetry"
+        POETRY_BIN = "${env.WORKSPACE}/.poetry/bin"
         PATH = "${env.POETRY_BIN}:${env.PATH}"
     }
     
@@ -18,16 +17,21 @@ pipeline {
         stage('Setup Poetry') {
             steps {
                 script {
-                    // Install Poetry if not already installed
-                    sh '''
-                        if ! command -v poetry &> /dev/null; then
-                            echo "Installing Poetry..."
+                    // Check if Poetry is already available system-wide
+                    def poetryExists = sh(script: 'command -v poetry', returnStatus: true) == 0
+                    
+                    if (poetryExists) {
+                        echo "Poetry found in system PATH"
+                        sh 'poetry --version'
+                    } else {
+                        echo "Installing Poetry to workspace..."
+                        sh '''
+                            export POETRY_HOME="${WORKSPACE}/.poetry"
                             curl -sSL https://install.python-poetry.org | python3 -
-                        else
-                            echo "Poetry already installed"
+                            export PATH="${WORKSPACE}/.poetry/bin:$PATH"
                             poetry --version
-                        fi
-                    '''
+                        '''
+                    }
                 }
             }
         }
@@ -36,6 +40,7 @@ pipeline {
             steps {
                 sh '''
                     echo "Installing dependencies..."
+                    export PATH="${WORKSPACE}/.poetry/bin:$PATH"
                     poetry install --with dev --no-root
                 '''
             }
@@ -45,6 +50,7 @@ pipeline {
             steps {
                 sh '''
                     echo "Running tests with pytest..."
+                    export PATH="${WORKSPACE}/.poetry/bin:$PATH"
                     poetry run pytest tests/ -v --tb=short
                 '''
             }
