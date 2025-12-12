@@ -1,7 +1,10 @@
 import pytest
 import requests
 
+from jsonschema import validate
+
 from enums.global_enums import GlobalErrorMessages
+from schemas.entity import ENTITY_SCHEMA
 
 BASE_URL = "https://apichallenges.eviltester.com/sim/entities"
 
@@ -23,6 +26,22 @@ def test_all_entities():
         assert "id" in entity, "each entity should have an 'id' field"
         assert "name" in entity, "each entity should have an 'id' field"
         assert "description" in entity, "each entity should have an 'id' field"
+
+
+def test_all_entities_with_schema_validation():
+    response = requests.get(BASE_URL)
+    data = response.json()  
+
+    # Verify status code
+    assert response.status_code == 200, GlobalErrorMessages.WRONG_STATUS_CODE.value
+
+    # Verify content-type
+    assert response.headers["Content-Type"] == "application/json", GlobalErrorMessages.WRONG_CONTENT_TYPE.value
+
+    # Verify response structure and content
+    for entity in data["entities"]:
+        validate(instance=entity, schema=ENTITY_SCHEMA)
+
 
 def test_single_entity_by_id():
     entity_id = 1
