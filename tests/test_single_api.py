@@ -1,19 +1,21 @@
 import pytest
 import requests
 
+from enums.global_enums import GlobalErrorMessages
+
 BASE_URL = "https://apichallenges.eviltester.com/sim/entities"
 
 def test_all_entities():
-    response = requests.get(base_url)
+    response = requests.get(BASE_URL)
+    data = response.json()  
 
     # Verify status code
-    assert response.status_code == 200 
+    assert response.status_code == 200, GlobalErrorMessages.WRONG_STATUS_CODE.value
 
     # Verify content-type
-    assert response.headers["Content-Type"] == "application/json"
+    assert response.headers["Content-Type"] == "application/json", GlobalErrorMessages.WRONG_CONTENT_TYPE.value
 
     # Verify response structure and content
-    data = response.json()  
     assert isinstance(data, dict), "response should be a JSON object"
     assert "entities" in data, "response should contain 'entities' key"
     assert isinstance(data["entities"], list), "'entities' should be a list"
@@ -24,7 +26,7 @@ def test_all_entities():
 
 def test_single_entity_by_id():
     entity_id = 1
-    url = f"{base_url}/{entity_id}"
+    url = f"{BASE_URL}/{entity_id}"
     response = requests.get(url)
 
     # Verify status code
@@ -43,7 +45,7 @@ def test_single_entity_by_id():
 
 def test_single_entity_not_found():
     entity_id = 13  # Assuming this ID does not exist
-    url = f"{base_url}/{entity_id}"
+    url = f"{BASE_URL}/{entity_id}"
     response = requests.get(url)
 
     # Verify status code for not found
@@ -58,7 +60,7 @@ def test_create_entity():
     new_entity = {
         "name": "bob"
     }
-    response = requests.post(base_url, json=new_entity)
+    response = requests.post(BASE_URL, json=new_entity)
 
     # Verify status code
     assert response.status_code == 201 
@@ -85,7 +87,7 @@ test_suit_data = [
 
 @pytest.mark.parametrize("entity_id, entity_name", test_suit_data)
 def test_get_book_various_ids(entity_id, entity_name):
-    url = f"{base_url}/{entity_id}"
+    url = f"{BASE_URL}/{entity_id}"
     response = requests.get(url)
     entity = response.json() 
     assert entity["id"] == entity_id, f"entity 'id' should be {entity_id}"
