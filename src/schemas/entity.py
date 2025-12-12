@@ -7,3 +7,14 @@ ENTITY_SCHEMA = {
     },
     "required": ["id", "name", "description"]
 }
+
+ENTITIES_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "entities": {
+            "type": "array",
+            "items": ENTITY_SCHEMA
+            }
+    },
+    "required": ["entities"]
+}
