@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-base_url = "https://apichallenges.eviltester.com/sim/entities"
+BASE_URL = "https://apichallenges.eviltester.com/sim/entities"
 
 def test_all_entities():
     response = requests.get(base_url)
